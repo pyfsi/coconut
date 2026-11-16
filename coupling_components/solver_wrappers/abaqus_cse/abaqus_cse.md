@@ -6,13 +6,19 @@ Refer to [Abaqus](../abaqus.md) for the old version of the Abaqus solver wrapper
 Abaqus is a structural solver implementing the finite element method.
 Currently, this wrapper only supports FSI simulations, no other multi-physics problems.
 
-!!! failure "The traction is applied with one timestep lag in AbaqusCSE"
+!!! failure "Traction"
+
+    The traction is applied with one timestep lag in AbaqusCSE
 
 ??? info "Terminology"
 
     - A _step_ in Abaqus is a convenient period of time (during which a load is applied for example). Within the context of CoCoNuT it usually coincides with the complete duration of the calculation. It should not be confused with the _time step_.
     - An _increment_ in Abaqus is usually equal to the time step of Abaqus, unless subcycling is applied within the Abaqus solver. Then a time step can be subdivided in multiple increments.
     - In an implicit or strongly coupled FSI calculation, the structural solver is called multiple times per time step. A call of the the flow solver and subsequent call of the structural solver is called a _coupling iteration_. All coupling iterations are part of the same attempt of the same increment (unless subcycling is used).
+
+??? warning "Subcycling"
+
+    Subcycling is allowed, but currently only works with explicit coupling.  
 
 ??? success "Licensing"
 

@@ -11,6 +11,7 @@ from os.path import join, dirname, abspath
 from xml.dom import minidom
 import numpy as np
 import psutil
+from decimal import Decimal
 from coconut import data_structure
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
@@ -44,8 +45,6 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.end_time = self.number_of_timesteps * self.delta_t
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
-        if self.save_restart < 0:
-            tools.print_info('Older restart files are currently not overlaid in AbaqusCSE.', layout='info')
         self.input_file = self.settings['input_file']
         self.disable_modification_of_input_file = self.settings.get('disable_modification_of_input_file', False)
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -136,10 +135,9 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             if self.timestep_start > restart_log[-1, 1]:
                 # start timestep is within scope of last simulation
                 self.restart_step = restart_log[-1, 0]
-                self.restart_inc = self.get_increment_from_accumulated_time(join(self.dir_csm, 'Abaqus.sta'),
+                self.restart_inc = self.get_increment_from_accumulated_time(join(self.dir_csm, 'Abaqus.msg'),
                                                                             (self.timestep_start - restart_log[
-                                                                                -1, 1]) * self.delta_t)
-                print(self.restart_step, self.restart_inc)
+                                                                                -1, 1] + 1) * self.delta_t)
                 # copy previous job files to the vault
                 for suffix in self.vault_suffixes:
                     from_file = join(self.dir_csm, f'Abaqus.{suffix}')
@@ -152,9 +150,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 index = np.where(restart_log[:, 1] < self.timestep_start)[0][-1]
                 self.restart_step = restart_log[index, 0]
                 self.restart_inc = self.get_increment_from_accumulated_time(
-                    join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.sta'),
-                    (self.timestep_start - restart_log[index, 1]) * self.delta_t)
-                print(self.restart_step, self.restart_inc)
+                    join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.msg'),
+                    (self.timestep_start - restart_log[index, 1] + 1) * self.delta_t)
                 # clean up vault: remove newer files (but not from the last index, as they don't exist in the vault yet)
                 obsolete_steps = restart_log[index + 1:-1, 0]
                 for step in obsolete_steps:
@@ -583,6 +580,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                             warnings.warn(f'Expected *DYNAMIC or *STATIC instead of\n\t{line}\nCheck resulting input '
                                           f'file {input_file} to see if insertions were done correctly',
                                           category=UserWarning)
+                        if not 'DIRECT' in line.upper():
+                            warnings.warn('Subcycling should not be used with implicit coupling')
                         analysis_seen = True
                     elif in_step and analysis_seen and not line.startswith('*') and not time_step_size_seen:
                         # on data line for time increment
@@ -593,6 +592,10 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                                           category=UserWarning)
                             incr_info[0] = str(self.delta_t)
                         incr_info[1] = str(self.end_time)
+                        if len(incr_info) > 2:
+                            if not np.isclose(float(incr_info[2]), self.delta_t, atol=0):
+                                warnings.warn(f'Minimum time increment {float(incr_info[2])} is smaller than delta_t, '
+                                              f'subcycling is not supported in implicit coupling', category=UserWarning)
                         line = ', '.join(incr_info) + '\n'
                         time_step_size_seen = True
                     elif in_step and line.upper().startswith('*CO-SIMULATION'):
@@ -614,6 +617,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                             line_parts = [p for p in line_parts if not any(param in p.upper() for param in parameters)]
                             if self.save_restart:
                                 line_parts.append('NUMBER INTERVAL=1')
+                                if self.save_restart < 0:
+                                    line_parts.append('OVERLAY')
                             else:
                                 line_parts.append('FREQUENCY=0')
                             line = ', '.join(line_parts) + '\n'
@@ -629,7 +634,13 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                             out_file.write(f'*OUTPUT, FIELD, VARIABLE=PRESELECT, TIME MARKS=YES, '
                                            f'TIME INTERVAL={self.save_results * self.delta_t}\n**\n')
                         if not restart_found:
-                            out_file.write(f'*RESTART, WRITE, NUMBER INTERVAL=1\n**\n')
+                            if self.restart:
+                                if self.restart > 0:
+                                    out_file.write(f'*RESTART, WRITE, NUMBER INTERVAL=1\n**\n')
+                                else:
+                                    out_file.write(f'*RESTART, WRITE, NUMBER INTERVAL=1, OVERLAY\n**\n')
+                            else:
+                                out_file.write(f'*RESTART, WRITE, FREQUENCY=0\n**\n')
                     if (self.timestep_start == 0) or bool_restart:
                         out_file.write(line)
 
@@ -638,28 +649,24 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         shutil.copy2(path, new_path)
 
     @staticmethod
-    def get_increment_from_accumulated_time(status_file, target_time, atol=1e-12):
-        accumulated_time = 0.0
-        with open(status_file, "r") as f:
-            for line in f:
-                if not re.match(r"^\s*\d+\s+\d+", line):  # Skip headers
-                    continue
+    def get_increment_from_accumulated_time(msg_file, target_time, atol=1e-12):
+        out = subprocess.check_output(["grep", "-A1", "RESTART INFORMATION WRITTEN", msg_file], text=True)
+        lines = out.splitlines()
+        target_time = Decimal(str(target_time))
+        atol = Decimal(str(atol))
 
-                fields = line.split()
-
-                inc = int(fields[1])
-                att = fields[2]
-
-                # Skip unsuccessful or special iterations
-                if "U" in att or "E" in att:
-                    continue
-
-                # Increment size of successful increment
-                dt = float(fields[-1])
-                accumulated_time += dt
-
-                # Check if step time at end of increment is equal to target_time
-                if abs(accumulated_time-target_time) < atol:
-                    return inc
-
-        raise ValueError(f"No increment found for accumulated time {target_time}")
+        for i in range(0, len(lines)-1, 3):
+            line = lines[i]
+            if "RESTART INFORMATION WRITTEN IN STEP" not in line:
+                raise ValueError(f'Expected pattern "RESTART INFORMATION WRITTEN" in line: {line}\n')
+            next_line = lines[i+1]
+            if "TARGET TIME FOR NEXT COUPLING STEP" in next_line:
+                msg_time = Decimal(next_line.strip().split()[-1])
+                if abs(msg_time - target_time) <= atol:
+                    return int(line.strip().split()[-1])
+                elif msg_time > target_time + atol:
+                    raise ValueError(f'Current coupling time ({float(msg_time)}) exceeded target time ({float(target_time)})\n')
+            elif i == len(lines)-2:
+                # last occurrence of "RESTART INFORMATION WRITTEN",
+                # assumed to be at last timestep of previous simulation, hence no occurrence of next coupling step
+                return int(line.strip().split()[-1])
