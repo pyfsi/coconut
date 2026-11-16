@@ -592,7 +592,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                                           category=UserWarning)
                             incr_info[0] = str(self.delta_t)
                         incr_info[1] = str(self.end_time)
-                        if len(incr_info) > 2:
+                        if len(incr_info) > 2 and len(incr_info[2]) > 0:
                             if not np.isclose(float(incr_info[2]), self.delta_t, atol=0):
                                 warnings.warn(f'Minimum time increment {float(incr_info[2])} is smaller than delta_t, '
                                               f'subcycling is not supported in implicit coupling', category=UserWarning)
