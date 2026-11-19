@@ -34,14 +34,11 @@ solver_load_cmd_dict = {
     },
     'ugent_hpc': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml iimpi/2023a ; unset SLURM_GTIDS '
-                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@157.193.245.81',
         'fluent.v2024R1': 'ml FLUENT/2024R1 ; unset SLURM_GTIDS '
-                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@157.193.245.81',
         'fluent.v2024R2': 'ml FLUENT/2024R2 ; unset SLURM_GTIDS '
-                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@157.193.245.81',
         'abaqus.v2024': 'ml intel/2024a; ml ABAQUS/2024-hotfix-2405; unset SLURM_GTIDS; [ -f ~/abaqus_v6.env ] || '
                         'cat > ~/abaqus_v6.env << EOF\nimport os\nlicense_server_type=DSLS\ndsls_license_config='
                         'os.path.join(os.path.expanduser("~"), "DSLicSrv.txt")\ndel os\nEOF\n'
@@ -54,12 +51,6 @@ solver_load_cmd_dict = {
         'openfoam_org.v10': 'ml OpenFOAM/10-foss-2023a; source $FOAM_BASH',
         'openfoam_org.v11': 'ml OpenFOAM/11-foss-2023a; source $FOAM_BASH',
         'openfoam_esi.v2312': 'ml OpenFOAM/v2312-foss-2023a && source $FOAM_BASH',
-    },
-    'hortense': {
-        'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml intel/2021a '
-                          '; export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
-        'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE',  # needs to be FALSE in job script, but TRUE for Kratos
     }
 }
 
