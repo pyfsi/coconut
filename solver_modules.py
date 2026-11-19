@@ -17,10 +17,20 @@ solver_load_cmd_dict = {
         'openfoam_org.v10': 'ml OpenFOAM/10-foss-2023a && source $FOAM_BASH',
         'openfoam_org.v11': 'ml OpenFOAM/11-foss-2023a && source $FOAM_BASH',
         'openfoam_esi.v2312': 'ml OpenFOAM/v2312-foss-2023a && source $FOAM_BASH',
-        'abaqus.v2023': 'ml intel/2022b && ml ABAQUS/2023',
-        'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024',
-        'abaqus_cse.v2025': 'ml ABAQUS/2025',
-        'abaqus_cse.v2026': 'ml ABAQUS/2026'
+        'abaqus.v2023': 'ml intel/2022b && ml ABAQUS/2023 && [ -f ~/abaqus_v6.env ] || cat > ~/abaqus_v6.env << EOF\n'
+                        'import os\nlicense_server_type=DSLS\ndsls_license_config=os.path.join(os.path.expanduser("~"),'
+                        '"DSLicSrv.txt")\ndel os\nEOF\n cat > ~/DSLicSrv.txt << EOF\ncfdfile1.ugent.be:4085\n'
+                        'ea11serv03.private.ugent.be:4085\nEOF\n echo ""',
+        'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024 && [ -f ~/abaqus_v6.env ] || cat > ~/abaqus_v6.env << EOF\n'
+                        'import os\nlicense_server_type=DSLS\ndsls_license_config=os.path.join(os.path.expanduser("~"),'
+                        '"DSLicSrv.txt")\ndel os\nEOF\n cat > ~/DSLicSrv.txt << EOF\ncfdfile1.ugent.be:4085\n'
+                        'ea11serv03.private.ugent.be:4085\nEOF\n echo ""',
+        'abaqus_cse.v2025': 'ml ABAQUS/2025 && [ -f ~/abaqus_v6.env ] || cat > ~/abaqus_v6.env << EOF\n'
+                        'import os\nlicense_server_type=DSLS\ndsls_license_config=os.path.join(os.path.expanduser("~"),'
+                        '"DSLicSrv.txt")\ndel os\nEOF\n echo ea11serv03.private.ugent.be:4085 > ~/DSLicSrv.txt',
+        'abaqus_cse.v2026': 'ml ABAQUS/2026 && [ -f ~/abaqus_v6.env ] || cat > ~/abaqus_v6.env << EOF\n'
+                        'import os\nlicense_server_type=DSLS\ndsls_license_config=os.path.join(os.path.expanduser("~"),'
+                        '"DSLicSrv.txt")\ndel os\nEOF\n echo ea11serv03.private.ugent.be:4085 > ~/DSLicSrv.txt'
     },
     'ugent_hpc': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml iimpi/2023a ; unset SLURM_GTIDS '
@@ -32,7 +42,14 @@ solver_load_cmd_dict = {
         'fluent.v2024R2': 'ml FLUENT/2024R2 ; unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
-        'abaqus.v2024': 'ml intel/2024a; ml ABAQUS/2024-hotfix-2405; unset SLURM_GTIDS',
+        'abaqus.v2024': 'ml intel/2024a; ml ABAQUS/2024-hotfix-2405; unset SLURM_GTIDS; [ -f ~/abaqus_v6.env ] || '
+                        'cat > ~/abaqus_v6.env << EOF\nimport os\nlicense_server_type=DSLS\ndsls_license_config='
+                        'os.path.join(os.path.expanduser("~"), "DSLicSrv.txt")\ndel os\nEOF\n'
+                        'echo ea11serv03.private.ugent.be:4085 > ~/DSLicSrv.txt',
+        'abaqus_cse.v2025': 'ml intel/2024a; ml ABAQUS/2025; unset SLURM_GTIDS; [ -f ~/abaqus_v6.env ] || '
+                        'cat > ~/abaqus_v6.env << EOF\nimport os\nlicense_server_type=DSLS\ndsls_license_config='
+                        'os.path.join(os.path.expanduser("~"), "DSLicSrv.txt")\ndel os\nEOF\n'
+                        'echo ea11serv03.private.ugent.be:4085 > ~/DSLicSrv.txt',
         'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE',  # needs to be FALSE in job script, but TRUE for Kratos
         'openfoam_org.v10': 'ml OpenFOAM/10-foss-2023a; source $FOAM_BASH',
         'openfoam_org.v11': 'ml OpenFOAM/11-foss-2023a; source $FOAM_BASH',
