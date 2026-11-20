@@ -39,6 +39,8 @@ solver_load_cmd_dict = {
                           '&& export ANSYSLMD_LICENSE_FILE=1055@157.193.245.81',
         'fluent.v2024R2': 'ml FLUENT/2024R2 ; unset SLURM_GTIDS '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@157.193.245.81',
+        'fluent.v2025R2': 'ml FLUENT/2025R2; ml iimpi/2025a; unset SLURM_GTIDS; unset SLURM_EXPORT_ENV; '
+                          'export I_MPI_COLL_EXTERNAL=0; export ANSYSLMD_LICENSE_FILE=1055@157.193.245.81',
         'abaqus.v2024': 'ml intel/2024a; ml ABAQUS/2024-hotfix-2405; unset SLURM_GTIDS; [ -f ~/abaqus_v6.env ] || '
                         'cat > ~/abaqus_v6.env << EOF\nimport os\nlicense_server_type=DSLS\ndsls_license_config='
                         'os.path.join(os.path.expanduser("~"), "DSLicSrv.txt")\ndel os\nEOF\n'
