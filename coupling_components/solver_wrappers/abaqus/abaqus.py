@@ -3,7 +3,7 @@ from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWra
 from coconut import tools
 
 import os
-from os.path import join, dirname, abspath
+# from os.path import join, dirname, abspath
 import glob
 import subprocess
 import shutil
@@ -37,15 +37,15 @@ class SolverWrapperAbaqus(SolverWrapper):
 
         # set parameters
         self.settings = parameters['settings']
-        self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
+        self.dir_csm = os.path.join(os.getcwd(), self.settings['working_directory'])
         self.env = None
         self.dir_vault = Path(self.dir_csm) / 'vault'
         self.dir_vault.mkdir(exist_ok=True)
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
-        self.path_src = os.path.realpath(os.path.dirname(__file__))
+        self.wrapper_dir = os.path.realpath(os.path.dirname(__file__))
         self.logfile = 'abaqus.log'
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')
-        self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_abaqus')
+        self.unique_tmp_dir = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_abaqus')
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
@@ -77,12 +77,11 @@ class SolverWrapperAbaqus(SolverWrapper):
         super().initialize()
 
         # prepare abaqus_v6.env
-        hostname_replace = ''
-        with open(join(self.path_src, 'abaqus_v6.env'), 'r') as infile:
-            with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
+        with open(os.path.join(self.wrapper_dir, 'abaqus_v6.env'), 'r') as infile:
+            with open(os.path.join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_dir_unique))
-                    line = line.replace('|LICENSE_FILE_NAME|', join(dirname(abspath(__file__)), 'DSLicSrv.txt'))
+                    line = line.replace('|TMP_DIRECTORY_NAME|', os.path.join('/tmp', self.unique_tmp_dir))
+                    line = line.replace('|LICENSE_FILE_NAME|', os.path.join(self.wrapper_dir, 'DSLicSrv.txt'))
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
                     line = line.replace('|LINK_EXE|', self.link_exe) if self.link_exe is not None \
@@ -92,22 +91,23 @@ class SolverWrapperAbaqus(SolverWrapper):
                                          f'substitution: \n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
-        # create start and restart file (each time step > 1 is a restart of the previous converged time step)
-        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + '/CSM_Time0.inp',
-                                         self.dir_csm + '/CSM_Restart.inp')
+        # create start and restart file
+        input_file_path = os.path.join(self.dir_csm, self.input_file)
+        output_file_path = os.path.join(self.dir_csm, 'CSM_Time0.inp')
+        restart_file_path = os.path.join(self.dir_csm, 'CSM_Restart.inp')
+        self.write_start_and_restart_inp(input_file_path, output_file_path, restart_file_path)
 
         # create libusr and tmp folders
-        path_libusr = join(self.dir_csm, 'libusr/')
+        path_libusr = os.path.join(self.dir_csm, 'libusr')
         shutil.rmtree(path_libusr, ignore_errors=True)  # needed if restart
         os.mkdir(path_libusr)
-        shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_dir_unique))  # create tmp-directory
+        shutil.rmtree(os.path.join('/tmp', self.unique_tmp_dir), ignore_errors=True)
+        os.mkdir(os.path.join('/tmp', self.unique_tmp_dir))  # create tmp-directory
 
         # prepare Abaqus USRInit.f
         if self.timestep_start == 0:  # run USRInit only for new calculation
-            usr = 'USRInit.f'
-            with open(join(self.path_src, usr), 'r') as infile:
-                with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
+            with open(os.path.join(self.wrapper_dir, 'USRInit.f'), 'r') as infile:
+                with open(os.path.join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
                     for line in infile:
                         line = line.replace('|dimension|', str(self.dimensions))
                         line = line.replace('|surfaces|', str(len(self.mp_in)))
@@ -131,7 +131,6 @@ class SolverWrapperAbaqus(SolverWrapper):
             self.print_log(f'\n### Get load integration points using usrInit.f ###')
             cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                    f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
-            # the output files will have a name with a higher time step  ('job=') than the input file ('input=')
             cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
                    f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = cmd1 + '; ' + cmd2
@@ -145,8 +144,8 @@ class SolverWrapperAbaqus(SolverWrapper):
 
         # prepare GetOutput.cpp
         get_output = 'GetOutput.cpp'
-        with open(join(self.path_src, get_output), 'r') as infile:
-            with open(join(self.dir_csm, get_output), 'w') as outfile:
+        with open(os.path.join(self.wrapper_dir, get_output), 'r') as infile:
+            with open(os.path.join(self.dir_csm, get_output), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|surfaces|', str(len(self.mp_out)))
                     line = line.replace('|surfaceIDs|', '\"' + '\", \"'.join(self.mp_out) + '\"')
@@ -168,19 +167,19 @@ class SolverWrapperAbaqus(SolverWrapper):
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
             for mp_id in range(len(self.mp_out)):
-                path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{mp_id}Output.dat')
-                path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
+                path_output = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{mp_id}Output.dat')
+                path_nodes = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
                 shutil.move(path_output, path_nodes)
 
         # prepare Abaqus USR.f
-        usr = 'USR.f'
-        with open(join(self.path_src, usr), 'r') as infile:
-            with open(join(self.dir_csm, 'usr.f'), 'w') as outfile:
+        with open(os.path.join(self.wrapper_dir, 'USR.f'), 'r') as infile:
+            with open(os.path.join(self.dir_csm, 'usr.f'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|dimension|', str(self.dimensions))
                     line = line.replace('|arraySize|', str(self.array_size))
                     line = line.replace('|surfaces|', str(len(self.mp_in)))
-                    line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
+                    text = '\'' + '\', \''.join(self.mp_in) + '\''
+                    line = line.replace('|surfaceIDs|', text)
                     line = line.replace('|cpus|', str(self.cores))
                     line = line.replace('|ramp|', str(self.ramp))
                     line = line.replace('|deltaT|', str(self.delta_t))
@@ -208,7 +207,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             mp_name = item['model_part']
 
             # read in elements file
-            elem0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Elements.dat')
+            elem0_file = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Elements.dat')
             elements0 = np.loadtxt(elem0_file)
             n_elem = int(elements0[0, 0])  # elements first item on line 1 contains number of elements
             n_lp = int(elements0[0, 1])  # elements second item on line 1 contains number of total load points
@@ -217,7 +216,7 @@ class SolverWrapperAbaqus(SolverWrapper):
                                  f'the number of elements ({n_elem})')
 
             # read in faces file for load points
-            faces0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Faces.dat')
+            faces0_file = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Faces.dat')
             faces0 = np.loadtxt(faces0_file)
             if faces0.shape[1] != self.dimensions + 2:
                 raise ValueError(f'Given dimension does not match coordinates')
@@ -254,7 +253,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             mp_name = item['model_part']
 
             # read in nodes file
-            nodes0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Nodes.dat')
+            nodes0_file = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Nodes.dat')
             nodes0 = np.loadtxt(nodes0_file, skiprows=1)  # first line is a header
             n_nodes0 = nodes0.shape[0]
             if nodes0.shape[1] != self.dimensions:
@@ -300,9 +299,9 @@ class SolverWrapperAbaqus(SolverWrapper):
         # copy input data for debugging
         if self.debug:
             for mp_id in range(len(self.mp_in)):
-                file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
-                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
-                                                f'_it{self.iteration}.dat')
+                surface_input_name = f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
+                file_name1 = os.path.join(self.dir_csm, f'{surface_input_name}.dat')
+                file_name2 = os.path.join(self.dir_csm, f'{surface_input_name}_it{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
@@ -378,12 +377,12 @@ class SolverWrapperAbaqus(SolverWrapper):
         for mp_id, item in enumerate(self.settings['interface_output']):
             mp_name = item['model_part']
             # read in output file for surface nodes
-            file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output.dat')
+            file_name = os.path.join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output.dat')
             data = np.loadtxt(file_name, skiprows=1)
 
             # copy output data for debugging
             if self.debug:
-                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_it{self.iteration}.dat')
+                file_name2 = os.path.join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_it{self.iteration}.dat')
                 shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:
@@ -404,19 +403,26 @@ class SolverWrapperAbaqus(SolverWrapper):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.timestep - 1 > self.timestep_start and \
-                (self.save_restart == 0 or (self.timestep - 1) % self.save_restart != 0):
-            # no files from previous time step needed for restart
+
+        # remove files from previous time step
+        is_time_after_start = (self.timestep - 1) > self.timestep_start
+        is_not_save_time = (self.timestep - 1) % self.save_restart != 0
+        is_save_restart_deactivated = self.save_restart == 0
+        if is_time_after_start and (is_save_restart_deactivated or is_not_save_time):
             self.remove_files(self.timestep - 1)
-        if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
-                self.timestep % self.save_restart == 0:
-            # if (self.timestep + self.save_restart < self.timestep_start): don't touch files from previous
-            # calculation
+
+        # remove files
+        is_save_restart_negative = self.save_restart < 0
+        is_time_passed_save_delay = (self.timestep + self.save_restart) > self.timestep_start
+        is_save_time = self.timestep % self.save_restart == 0
+        if is_save_restart_negative and is_time_passed_save_delay and is_save_time:
             # files from (self.timestep + self.save_restart) may be removed as new restart files are
             # present at current timestep
             self.remove_files(self.timestep + self.save_restart)
+
+        # empty vault
         for f in self.dir_vault.iterdir():
-            f.unlink()  # empty vault
+            f.unlink()
 
     @tools.time_save
     def output_solution_step(self):
@@ -452,13 +458,13 @@ class SolverWrapperAbaqus(SolverWrapper):
         to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt']
         to_be_removed_pattern = ['Surface*Cpu0Input.dat', 'Surface*Output.dat']
         for suffix in to_be_removed_suffix:
-            os.remove(join(self.dir_csm, f'CSM_Time{timestep}{suffix}'))
+            os.remove(os.path.join(self.dir_csm, f'CSM_Time{timestep}{suffix}'))
         for pattern in to_be_removed_pattern:
-            for path in glob.glob(join(self.dir_csm, f'CSM_Time{timestep}{pattern}')):
+            for path in glob.glob(os.path.join(self.dir_csm, f'CSM_Time{timestep}{pattern}')):
                 os.remove(path)
         if self.save_results == 0 or timestep % self.save_results != 0:
             # .odb not needed for post-processing
-            os.remove(join(self.dir_csm, f'CSM_Time{timestep}.odb'))
+            os.remove(os.path.join(self.dir_csm, f'CSM_Time{timestep}.odb'))
 
     # noinspection PyMethodMayBeStatic
     def make_elements(self, face_file, output_file):
@@ -608,10 +614,10 @@ class SolverWrapperAbaqus(SolverWrapper):
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
             data = np.hstack((pressure, traction[:, :self.dimensions]))
             fmt = (self.dimensions + 1) * '%27.17e'  # format of load input file should be exactly this for USR.f
-            file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
+            file_name = os.path.join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
             # start of a simulation with ramp, needs an initial load at time 0: set at zero load
             if self.iteration == 1 and self.timestep == 1 and self.ramp:
-                file_name = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Input.dat')
+                file_name = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Input.dat')
                 np.savetxt(file_name, data * 0, fmt=fmt, header=f'{model_part.size}', comments='')
