@@ -109,7 +109,6 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
-                    line = line.replace('|LICENSE_FILE_NAME|', join(dirname(abspath(__file__)), 'DSLicSrv.txt'))
                     if '|' in line:
                         raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
                                          f'substitution: \n \t{line} \nA parameter was not substituted')

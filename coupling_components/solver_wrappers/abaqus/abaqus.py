@@ -82,7 +82,6 @@ class SolverWrapperAbaqus(SolverWrapper):
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_dir_unique))
-                    line = line.replace('|LICENSE_FILE_NAME|', join(dirname(abspath(__file__)), 'DSLicSrv.txt'))
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
                     line = line.replace('|LINK_EXE|', self.link_exe) if self.link_exe is not None \
