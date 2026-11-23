@@ -66,6 +66,8 @@ class SolverWrapperAbaqus(SolverWrapper):
             idx = item['model_part'].rindex('_nodes')
             self.mp_out.append(item['model_part'][:idx])
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
+        self.n_prestress = int(self.settings.get("n_prestress", 0))
+        self.inc = int(self.settings.get("increment", 10))
 
         # environment file parameters
         self.link_sl = None
@@ -91,12 +93,13 @@ class SolverWrapperAbaqus(SolverWrapper):
                     outfile.write(line)
 
         # create start and restart file
+        step_start = self.timestep_start + self.n_prestress
         case_inp_path = os.path.join(self.dir_csm, self.input_file)
-        start_inp_path = os.path.join(self.dir_csm, 'CSM_Time0.inp')
+        start_inp_path = os.path.join(self.dir_csm, f'CSM_Time{step_start}.inp')
         restart_inp_path = os.path.join(self.dir_csm, 'CSM_Restart.inp')
         inp_settings = {
-            "delta_time": str(self.delta_t),
-            "inc": "1", # TODO hardcoded value
+            "delta_time": self.delta_t,
+            "inc": self.inc,
             "mp_in": self.mp_in,
             "mp_out": self.mp_out,
         }
@@ -134,17 +137,17 @@ class SolverWrapperAbaqus(SolverWrapper):
 
             # get load points from usrInit.f at timestep_start
             self.print_log(f'\n### Get load integration points using usrInit.f ###')
-            cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
-                   f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
-            cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
+            cmd1 = f'rm -f CSM_Time{step_start}Surface*Faces.dat ' \
+                   f'CSM_Time{step_start}Surface*FacesBis.dat'
+            cmd2 = f'abaqus job=CSM_Time{step_start + 1} input=CSM_Time{step_start} ' \
                    f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = cmd1 + '; ' + cmd2
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
             # create elements file per surface
             for mp_id in range(len(self.mp_in)):
-                face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Cpu0Faces.dat')
-                output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat')
+                face_file = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Cpu0Faces.dat')
+                output_file = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Elements.dat')
                 self.make_elements(face_file, output_file)
 
         # prepare GetOutput.cpp
@@ -168,12 +171,12 @@ class SolverWrapperAbaqus(SolverWrapper):
         # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
         if self.timestep_start == 0:
             self.print_log(f'\n### Get geometrical node positions using GetOutput ###')
-            cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> {self.logfile} 2>&1'
+            cmd = f'abaqus ./GetOutput.exe CSM_Time{step_start + 1} 0 >> {self.logfile} 2>&1'
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
             for mp_id in range(len(self.mp_out)):
-                path_output = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{mp_id}Output.dat')
-                path_nodes = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
+                path_output = os.path.join(self.dir_csm, f'CSM_Time{step_start + 1}Surface{mp_id}Output.dat')
+                path_nodes = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Nodes.dat')
                 shutil.move(path_output, path_nodes)
 
         # prepare Abaqus USR.f
@@ -212,7 +215,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             mp_name = item['model_part']
 
             # read in elements file
-            elem0_file = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Elements.dat')
+            elem0_file = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Elements.dat')
             elements0 = np.loadtxt(elem0_file)
             n_elem = int(elements0[0, 0])  # elements first item on line 1 contains number of elements
             n_lp = int(elements0[0, 1])  # elements second item on line 1 contains number of total load points
@@ -221,7 +224,7 @@ class SolverWrapperAbaqus(SolverWrapper):
                                  f'the number of elements ({n_elem})')
 
             # read in faces file for load points
-            faces0_file = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Faces.dat')
+            faces0_file = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Cpu0Faces.dat')
             faces0 = np.loadtxt(faces0_file)
             if faces0.shape[1] != self.dimensions + 2:
                 raise ValueError(f'Given dimension does not match coordinates')
@@ -258,7 +261,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             mp_name = item['model_part']
 
             # read in nodes file
-            nodes0_file = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Nodes.dat')
+            nodes0_file = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Nodes.dat')
             nodes0 = np.loadtxt(nodes0_file, skiprows=1)  # first line is a header
             n_nodes0 = nodes0.shape[0]
             if nodes0.shape[1] != self.dimensions:
@@ -301,16 +304,18 @@ class SolverWrapperAbaqus(SolverWrapper):
         # write loads (from interface data to a file that will be read by USR.f)
         self.write_loads()
 
+        step_start = self.timestep + self.n_prestress
+
         # copy input data for debugging
         if self.debug:
             for mp_id in range(len(self.mp_in)):
-                surface_input_name = f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
+                surface_input_name = f'CSM_Time{step_start}Surface{mp_id}Cpu0Input'
                 file_name1 = os.path.join(self.dir_csm, f'{surface_input_name}.dat')
                 file_name2 = os.path.join(self.dir_csm, f'{surface_input_name}_it{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
-        self.print_log(f'\n### Time step {self.timestep}, iteration {self.iteration} ###')
+        self.print_log(f'\n### Time step {step_start}, iteration {self.iteration} ###')
         bool_completed = False
         attempt = 0
         while not bool_completed and attempt < 10000:
@@ -321,32 +326,32 @@ class SolverWrapperAbaqus(SolverWrapper):
                 time.sleep(60)
                 tools.print_info(f'Starting attempt {attempt}')
             if self.timestep == 1:
-                cmd = f'abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} ' \
+                cmd = f'abaqus job=CSM_Time{step_start} input=CSM_Time{step_start - 1} ' \
                       f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
             else:
                 if self.iteration == 1:
                     # run datacheck and store generated files safely
-                    cmd = f'abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
+                    cmd = f'abaqus datacheck job=CSM_Time{step_start} oldjob=CSM_Time{step_start - 1} ' \
                           f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
                           f'>> {self.logfile} 2>&1'
                     subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
                     for suffix in self.vault_suffixes:
-                        from_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
-                        to_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
+                        from_file = Path(self.dir_csm) / f'CSM_Time{step_start}.{suffix}'
+                        to_file = self.dir_vault / f'CSM_Time{step_start}.{suffix}'
                         shutil.copy(from_file, to_file)
                     # run continue
-                    cmd = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
+                    cmd = f'abaqus continue job=CSM_Time{step_start} oldjob=CSM_Time{step_start - 1} ' \
                           f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
                           f'>> {self.logfile} 2>&1'
                     subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
                 else:
                     # run continue using previously stored simulation files
                     for suffix in self.vault_suffixes:
-                        from_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
-                        to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
+                        from_file = self.dir_vault / f'CSM_Time{step_start}.{suffix}'
+                        to_file = Path(self.dir_csm) / f'CSM_Time{step_start}.{suffix}'
                         shutil.copy(from_file, to_file)
-                    cmd = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
+                    cmd = f'abaqus continue job=CSM_Time{step_start} oldjob=CSM_Time{step_start - 1} ' \
                           f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
                           f'>> {self.logfile} 2>&1'
                     subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
@@ -370,24 +375,24 @@ class SolverWrapperAbaqus(SolverWrapper):
                                    f'information')
 
             # append additional information to log file
-            cmd = f'tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\' ' \
+            cmd = f'tail -n 23 CSM_Time{step_start}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\' ' \
                   f'>> {self.logfile} 2>&1'
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
         # write Abaqus output
-        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep} 1 >> {self.logfile} 2>&1'
+        cmd = f'abaqus ./GetOutput.exe CSM_Time{step_start} 1 >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
         # read Abaqus output data
         for mp_id, item in enumerate(self.settings['interface_output']):
             mp_name = item['model_part']
             # read in output file for surface nodes
-            file_name = os.path.join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output.dat')
+            file_name = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Output.dat')
             data = np.loadtxt(file_name, skiprows=1)
 
             # copy output data for debugging
             if self.debug:
-                file_name2 = os.path.join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_it{self.iteration}.dat')
+                file_name2 = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Output_it{self.iteration}.dat')
                 shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:
@@ -414,7 +419,7 @@ class SolverWrapperAbaqus(SolverWrapper):
         is_not_save_time = (self.timestep - 1) % self.save_restart != 0
         is_save_restart_deactivated = self.save_restart == 0
         if is_time_after_start and (is_save_restart_deactivated or is_not_save_time):
-            self.remove_files(self.timestep - 1)
+            self.remove_files(self.timestep + self.n_prestress - 1)
 
         # remove files
         is_save_restart_negative = self.save_restart < 0
@@ -423,7 +428,7 @@ class SolverWrapperAbaqus(SolverWrapper):
         if is_save_restart_negative and is_time_passed_save_delay and is_save_time:
             # files from (self.timestep + self.save_restart) may be removed as new restart files are
             # present at current timestep
-            self.remove_files(self.timestep + self.save_restart)
+            self.remove_files(self.timestep + self.save_restart, + self.n_prestress)
 
         # empty vault
         for f in self.dir_vault.iterdir():
@@ -474,8 +479,8 @@ class SolverWrapperAbaqus(SolverWrapper):
     # noinspection PyMethodMayBeStatic
     def make_elements(self, face_file, output_file):
         """
-        Reads the CSM_Time0SurfaceXFaces.dat file created by USRInit.f and converts it to
-        CSM_Time0SurfaceXElements.dat, formatted such that USR.f can read it. The first line mentions the number of
+        Reads the CSM_TimeNSurfaceXFaces.dat file created by USRInit.f and converts it to
+        CSM_TimeNSurfaceXElements.dat, formatted such that USR.f can read it. The first line mentions the number of
         elements and load integration points. All lines below contain the element number and cumulative number of
         load integration points. The USR.f uses this to quickly find the correct line to read from the load input files.
         """
@@ -567,6 +572,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
             # start of a simulation with ramp, needs an initial load at time 0: set at zero load
+            step_start = self.timestep_start + self.n_prestress
             if self.iteration == 1 and self.timestep == 1 and self.ramp:
-                file_name = os.path.join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Input.dat')
+                file_name = os.path.join(self.dir_csm, f'CSM_Time{step_start}Surface{mp_id}Cpu0Input.dat')
                 np.savetxt(file_name, data * 0, fmt=fmt, header=f'{model_part.size}', comments='')

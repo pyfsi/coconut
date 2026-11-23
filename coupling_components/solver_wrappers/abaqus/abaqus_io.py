@@ -1,5 +1,6 @@
 import re
 
+fixed_step_name = "coconut_abaqusStep"
 coco_abaqus_step_pattern = r'coconut_abaqusstep\n'
 abq_keywords = ['step', 'boundary conditions',
             'interactions', 'loads',
@@ -103,6 +104,28 @@ def define_coupling_loads(abq_dict, inp_settings):
 
     abq_dict["loads"] += "".join(coupled_load_setting)
 
+def modify_step_name(abq_dict,):
+    check_line = abq_dict["step"]
+
+    newline = '\n'
+    lines = check_line.replace(newline, ';').split(';')
+
+    # find *Step line
+    step_re = r"\*(Step).*"
+    for id, line in enumerate(lines):
+        if re.search(step_re, line):
+            step_id = id
+            break
+
+    # modify step inp_settings
+    step_vals = [line for line in lines[step_id].split(',')]
+    step_vals[1] = f' name={fixed_step_name}'
+    lines[step_id] = ",".join(step_vals)
+
+    # join lines
+    new_lines = newline.join(lines)
+    abq_dict["step"] = new_lines
+
 def modify_step_settings(abq_dict, inp_settings):
     check_line = abq_dict["step"]
 
@@ -121,7 +144,6 @@ def modify_step_settings(abq_dict, inp_settings):
 
     # modify step inp_settings
     step_vals = [line for line in lines[step_id].split(',')]
-    step_vals[1] = ' name=coconut_abaqusStep'
     inc_re = r'inc'
     if re.search(inc_re, step_vals[-1]):
         step_vals[-1] = inc_new
@@ -140,25 +162,17 @@ def modify_step_settings(abq_dict, inp_settings):
     abq_dict["step"] = new_lines
 
 def iter_write_abq_dict(f, abq_dict, print_interaction=True):
-    # for step in abq_dict["step"]:
     f.write(abq_dict["step"])
-    # for bcs in abq_dict["boundary conditions"]:
     f.write(abq_dict["boundary conditions"])
 
     # should interaction be printed
     if print_interaction:
-        # for interaction in abq_dict["interactions"]:
         f.write(abq_dict["interactions"])
 
-    # for load in abq_dict["loads"]:
     f.write(abq_dict["loads"])
-    # for control in abq_dict["controls"]:
     f.write(abq_dict["controls"])
-    # for output in abq_dict["output requests"]:
     f.write(abq_dict["output requests"])
-    # for field in abq_dict["field output"]:
     f.write(abq_dict["field output"])
-    # for history in abq_dict["history output"]:
     f.write(abq_dict["history output"])
 
 def write_start_inp(file_out, abq_dict):
@@ -182,13 +196,13 @@ def preprocess_inp_file(inp_settings, case_inp_path, start_inp_path, restart_inp
     # insert coupling loads
     define_coupling_loads(abq_dict, inp_settings)
 
-    # modify
-    modify_step_settings(abq_dict, inp_settings)
+    # rename last step to coconut_abaqusStep
+    modify_step_name(abq_dict)
 
     # write start file
     write_start_inp(start_inp_path, abq_dict)
 
-    # modify
+    # modify step increment and timesteps
     modify_step_settings(abq_dict, inp_settings)
 
     # write restart file
