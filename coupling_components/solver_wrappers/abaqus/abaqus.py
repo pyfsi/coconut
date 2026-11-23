@@ -1,9 +1,9 @@
 from coconut import data_structure
 from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
+from coconut.coupling_components.solver_wrappers.abaqus import abaqus_io as abq_io
 
 import os
-# from os.path import join, dirname, abspath
 import glob
 import subprocess
 import shutil
@@ -13,7 +13,6 @@ import textwrap
 from pathlib import Path
 import warnings
 from getpass import getuser
-
 
 def create(parameters):
     return SolverWrapperAbaqus(parameters)
@@ -92,10 +91,16 @@ class SolverWrapperAbaqus(SolverWrapper):
                     outfile.write(line)
 
         # create start and restart file
-        input_file_path = os.path.join(self.dir_csm, self.input_file)
-        output_file_path = os.path.join(self.dir_csm, 'CSM_Time0.inp')
-        restart_file_path = os.path.join(self.dir_csm, 'CSM_Restart.inp')
-        self.write_start_and_restart_inp(input_file_path, output_file_path, restart_file_path)
+        case_inp_path = os.path.join(self.dir_csm, self.input_file)
+        start_inp_path = os.path.join(self.dir_csm, 'CSM_Time0.inp')
+        restart_inp_path = os.path.join(self.dir_csm, 'CSM_Restart.inp')
+        inp_settings = {
+            "delta_time": str(self.delta_t),
+            "inc": "1", # TODO hardcoded value
+            "mp_in": self.mp_in,
+            "mp_out": self.mp_out,
+        }
+        abq_io.preprocess_inp_file(inp_settings, case_inp_path, start_inp_path, restart_inp_path)
 
         # create libusr and tmp folders
         path_libusr = os.path.join(self.dir_csm, 'libusr')
@@ -547,62 +552,6 @@ class SolverWrapperAbaqus(SolverWrapper):
                                            drop_whitespace=False)
             line = wrapper.fill(line.replace(orig, new))
         return line
-
-    def write_start_and_restart_inp(self, input_file, output_file, restart_file):
-        """
-        Read the case-file (.inp) and process it in an input-file for the first time step and a restart file used for
-        all subsequent time steps.
-        """
-        bool_restart = False
-
-        rf = open(restart_file, 'w')
-        of = open(output_file, 'w')
-
-        rf.write('*HEADING \n')
-        rf.write('*RESTART, READ \n')
-
-        with open(input_file) as f:
-            line = f.readline()
-            while line:
-                if '*dynamic' in line.lower() or '*static' in line.lower():
-                    if 'initial=no' not in line.lower():
-                        with warnings.catch_warnings():
-                            warnings.filterwarnings('always', category=UserWarning)
-                            warnings.warn(f'recommended setting "INITIAL=NO" not found in input file, please consult '
-                                          f'the documentation on STEP definition',
-                                          category=UserWarning)
-                    of.write(line)
-                    if bool_restart:
-                        rf.write(line)
-                    check_line = f.readline()  # need to skip the next line, but contents are checked
-                    check_list = [float(line_part) for line_part in check_line.replace(',\n', '').split(',')]
-                    if len(check_list) < 2:
-                        with warnings.catch_warnings():
-                            warnings.filterwarnings('always', category=UserWarning)
-                            warnings.warn(f'data line for time incrementation has a length smaller than 2, it will not '
-                                          f'be checked or modified by {self.__class__.__name__}', category=UserWarning)
-                        line_new = check_line
-                    else:
-                        check_ok = np.isclose(check_list[1], self.delta_t, atol=0)
-                        if not check_ok:
-                            with warnings.catch_warnings():
-                                warnings.filterwarnings('always', category=UserWarning)
-                                warnings.warn(f'{self.__class__.__name__} overwrites incrementation settings in '
-                                              f'{self.input_file}, make sure this is intended', category=UserWarning)
-                            check_list[1] = self.delta_t
-                        line_new = ' ,'.join(map(str, check_list)) + '\n'
-                    of.write(line_new)  # change the time step in the Abaqus step
-                    if bool_restart:
-                        rf.write(line_new)  # change the time step in the Abaqus step (restart-file)
-                else:
-                    of.write(line)
-                    if bool_restart:
-                        rf.write(line)
-                line = f.readline()
-                if '** --' in line:
-                    bool_restart = True
-        rf.close()
-        of.close()
 
     def write_loads(self):
         """Write the incoming loads to a file that is read by the READDATA subroutine in USR.f."""

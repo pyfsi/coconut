@@ -29,7 +29,7 @@ int ABQmain(int argc, char **argv)
 	unsigned int dataWidth = 27;
 	unsigned int surfaces = |surfaces|;
 	odb_String surfaceIDs[|surfaces|] = {|surfaceIDs|};
-	
+
 	// Read the output database and extract the nodal coordinates
 	odb_String path;
 	unsigned int frameIndex;
@@ -41,7 +41,7 @@ int ABQmain(int argc, char **argv)
 		exit(1);
 	}
 	odb_Odb& odb = openOdb(path);
-	odb_Step& step = odb.steps()["Step-1"];
+	odb_Step& step = odb.steps()["coconut_abaqusStep"];
 	odb_Frame& frame = step.frames()[(frameIndex ? step.frames().size()-1 : 0)];
 	odb_Assembly& assembly = odb.rootAssembly();
 	odb_FieldOutput& fieldOutput = frame.fieldOutputs()[(frameIndex ? "U" : "COORD")];
@@ -52,7 +52,7 @@ int ABQmain(int argc, char **argv)
 		odb_String outputPath = argv[1]+odb_String("Surface")+odb_String(surface)+odb_String("Output.dat");
 		std::ofstream outputFile(outputPath.CStr());
 		outputFile.precision(dataPrecision);
-		outputFile.fill(' '); 
+		outputFile.fill(' ');
 		outputFile.setf(std::ios_base::scientific, std::ios_base::floatfield);
 #if (|dimension|-2)
 		outputFile << "x-coordinate\ty-coordinate\tz-coordinate";
